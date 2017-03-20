@@ -1,0 +1,89 @@
+﻿#pragma kernel CSMain
+ 
+#define threadX 10
+#define threadY 10
+#define threadZ 10
+
+float _Time;
+float _Delta;
+
+int StrideX;
+int StrideY;
+int StrideZ;
+
+#define gridX (threadX * StrideX)
+#define gridY (threadY * StrideY)
+#define gridZ (threadZ * StrideZ)
+
+
+#include "Chunks/DreamVertStruct.cginc"
+#include "Chunks/AnchorStruct.cginc"
+
+#include "Chunks/humanStruct.cginc"
+#include "Chunks/handForce.cginc"
+#include "Chunks/springForce.cginc"
+
+int _NumberHumans;
+
+
+/*
+
+  Uniforms that move the story along;
+
+*/
+
+
+
+RWStructuredBuffer<Vert> vertBuffer;
+
+RWStructuredBuffer<Anchor> roomBuffer;
+RWStructuredBuffer<Anchor> starBuffer;
+RWStructuredBuffer<Anchor> spacePuppyBuffer;
+
+
+//RWStructuredBuffer<Pos> ogBuffer;
+//RWStructuredBuffer<float4x4> transBuffer;
+//RWStructuredBuffer<Human> humanBuffer;
+//RWStructuredBuffer<float4> audioBuffer;
+
+
+int _AudioLength;
+
+[numthreads(threadX,threadY,threadZ)]
+void CSMain (uint3 id : SV_DispatchThreadID) {
+  
+  int pID = id.x + id.y * gridX + id.z * gridX * gridY;
+
+  Vert vert = vertBuffer[pID];
+
+  Anchor roomAnchor       = roomBuffer[pID];
+  Anchor starAnchor       = starBuffer[pID];
+  Anchor spacePuppyAnchor = spacePuppyBuffer[pID];
+
+
+
+  
+
+  float3 force = float3( 0 , 0 , 0 );
+
+
+  float3 roomDir = (spacePuppyAnchor.pos- vert.pos);
+  force += roomDir;// , 0);
+
+
+
+
+  vert.vel += force * _Delta;
+  vert.pos += vert.vel;
+
+  vert.vel *= .9;
+
+  //vert.pos = roomAnchor.pos;
+  vert.uv = roomAnchor.uv;
+
+  vert.debug = float3( 0 , 1 , 0);
+ 
+
+  vertBuffer[pID] = vert;
+
+}
