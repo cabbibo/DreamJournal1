@@ -51,12 +51,21 @@ public class dreamVertBuffer : MonoBehaviour {
 		int index = 0;
 		for( int i = 0; i < fullVertCount; i++ ){
 
+
+			int triID = i / 3;
+
+			Random.seed = triID;
+
+			float centerX = Random.Range(-.99f,.99f);
+			float centerY = Random.Range(-.99f,.99f);
 		
 
 			// positions
+			vertValues[ index++ ] = 10 * centerX;
 			vertValues[ index++ ] = 0;
-			vertValues[ index++ ] = 0;
-			vertValues[ index++ ] = 0;
+			vertValues[ index++ ] = 10 * centerY;
+
+
 
 			// vel
 			vertValues[ index++ ] = 0;

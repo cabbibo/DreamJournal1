@@ -18,10 +18,16 @@ int StrideZ;
 
 #include "Chunks/DreamVertStruct.cginc"
 #include "Chunks/AnchorStruct.cginc"
+#include "Chunks/hash.cginc"
 
 #include "Chunks/humanStruct.cginc"
 #include "Chunks/handForce.cginc"
 #include "Chunks/springForce.cginc"
+
+#include "Chunks/triForce.cginc"
+
+#include "Chunks/snoise.cginc"
+#include "Chunks/curlNoise.cginc"
 
 int _NumberHumans;
 
@@ -32,7 +38,19 @@ int _NumberHumans;
 
 */
 
+int _Set;
 
+int sectionCanIncrease;
+int sectionMustIncrease;
+float sectionIncreaseSpeed;
+float sectionIncreaseRadius;
+float sectionIncreaseMax;
+float sectionIncreaseNoise;
+
+
+int roomLength;
+int starLength;
+int spacePuppyLength;
 
 RWStructuredBuffer<Vert> vertBuffer;
 
@@ -49,6 +67,57 @@ RWStructuredBuffer<Anchor> spacePuppyBuffer;
 
 int _AudioLength;
 
+
+float sdCapsule( float3 p, float3 a, float3 b, float r )
+{
+    float3 pa = p - a, ba = b - a;
+    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+    return length( pa - ba*h ) - r;
+}
+
+
+float3 voidForce(float3 p ){
+
+  // VoidCenter
+  float3 p1 = float3( 0 , 1.5 ,-1000 );
+  float3 p2 = float3( 0 , 1.5 , 1000 ); 
+
+  // Void radius;
+  float3 voidRadius = 3;
+
+  float capsule = sdCapsule( p , p1 , p2 , voidRadius );
+
+  float3 dir =normalize(p1-p2);
+
+
+  float3 eps = float3( 0.001, 0.0, 0.0 );
+  float3 n = float3(
+            sdCapsule(p+eps.xyy,p1,p2,voidRadius).x - sdCapsule(p-eps.xyy,p1,p2,voidRadius).x,
+            sdCapsule(p+eps.yxy,p1,p2,voidRadius).x - sdCapsule(p-eps.yxy,p1,p2,voidRadius).x,
+            sdCapsule(p+eps.yyx,p1,p2,voidRadius).x - sdCapsule(p-eps.yyx,p1,p2,voidRadius).x );
+         n = normalize(n);
+
+  float3 t = normalize(cross( n , dir ));
+
+
+  float3 outForce = 4 * max( -capsule , 0 ) * n;
+  float3 tanForce = .1 * t;
+  float3 dirForce = .4 * dir;
+
+  float3 force = outForce + tanForce + dirForce;
+
+
+  return force;
+
+
+
+
+}
+
+
+
+
+
 [numthreads(threadX,threadY,threadZ)]
 void CSMain (uint3 id : SV_DispatchThreadID) {
   
@@ -56,19 +125,138 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
   Vert vert = vertBuffer[pID];
 
+  Vert v1 = vertBuffer[int(vert.ids.y)];
+  Vert v2 = vertBuffer[int(vert.ids.z)];
+
   Anchor roomAnchor       = roomBuffer[pID];
   Anchor starAnchor       = starBuffer[pID];
   Anchor spacePuppyAnchor = spacePuppyBuffer[pID];
 
 
 
+  float dampening = .6;
+
+
+
   
 
   float3 force = float3( 0 , 0 , 0 );
+  float3 handForce = .04 *curlNoise( vert.pos * .4 + float3(0,_Time * .1 , 0) );// float3( 0 ,0 ,0 );
+  float3 closestHand = vert.pos - float3( 0,0,0);
+
+  float3 roomDif = -(vert.pos - roomAnchor.pos);
+  float3 starDif = -(vert.pos - starAnchor.pos);
+  float3 spacePuppyDif = -(vert.pos - spacePuppyAnchor.pos);
+
+  float3 keepItTogether = triForce( .01 , vert.pos , v1.pos , v2.pos );
+
+  Anchor currentTarget = roomAnchor;
+  //Percolate upwards
+
+  if( vert.section == 0){
+
+  }
 
 
-  float3 roomDir = (spacePuppyAnchor.pos- vert.pos);
-  force += roomDir;// , 0);
+  if( vert.section >= 0 && vert.section <1 ){
+
+    currentTarget = roomAnchor;
+    dampening = .95;
+
+    force += roomDif * (hash( float(pID) ) * .3 + .7) * vert.section;
+    //force += keepItTogether * .2 * ( 1-vert.section);
+
+    vert.uv = lerp( vert.uv , roomAnchor.uv , .1 );
+    vert.debug = float3( 1 , 0 , 0 );
+
+  }
+
+  //totally Stactic
+  if( vert.section >=1 && vert.section <2 ){
+
+    currentTarget = roomAnchor;
+    force += 10 * roomDif;
+    dampening = .3;
+
+
+    vert.debug = float3( 0 , 1 , 0 );
+  }
+
+  //Gooey Room
+  if( vert.section >= 2 && vert.section < 3 ){
+    
+    float gooeyness = vert.section - 2;
+    
+    currentTarget = roomAnchor;
+
+    force += roomDif * (( 1 - gooeyness ) * .5 + .4); 
+
+    force += handForce * gooeyness; 
+
+    dampening = gooeyness * .1 + .85;
+
+    vert.debug = float3( 0 , 0 , 1 );
+
+
+  }
+
+
+//Attract to stars
+  if( vert.section >= 3 && vert.section < 4 ){
+    currentTarget = starAnchor;
+
+    force += starDif * (vert.section -3);
+    dampening = .3;
+
+  }
+  // whirlWind
+  if( vert.section >= 4 && vert.section < 5 ){
+
+    currentTarget = starAnchor;
+
+    force += keepItTogether * .2 * ( vert.section-4);
+
+    force += voidForce( vert.pos ) * ( vert.section-4);
+
+     if( vert.pos.z < -20 ){
+          vert.pos = float3( vert.pos.x , vert.pos.y , 20);
+          vert.vel = float3( 0 ,0,0);
+          vert.debug.z = 1;
+        }
+
+    //vert.uv = lerp( vert.uv , starAnchor.uv , .1 );
+
+    dampening = .95;
+    
+    vert.debug = float3( 1 , 0 , 1 );
+
+  }
+
+  
+
+  //Attract to spacePuppy
+  if( vert.section >= 5 && vert.section < 6 ){
+
+    if( vert.pos.z < -20 ){
+      vert.section += .8;
+
+      v1.section = vert.section;
+      v2.section = vert.section;
+
+      v1 = v1;
+      v2 = v2;
+    }
+
+
+    force += 5 * spacePuppyDif * (vert.section -5);
+    dampening = .6;
+
+    currentTarget = spacePuppyAnchor;
+
+  }
+
+
+
 
 
 
@@ -76,10 +264,38 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
   vert.vel += force * _Delta;
   vert.pos += vert.vel;
 
-  vert.vel *= .9;
+  vert.vel *= dampening;
 
   //vert.pos = roomAnchor.pos;
-  vert.uv = roomAnchor.uv;
+  //vert.uv = roomAnchor.uv;
+  if( _Set == 1 ){
+    vert.pos = currentTarget.pos;
+    vert.nor = currentTarget.nor;
+    vert.uv = currentTarget.uv;
+    vert.vel = float3(0,0,0);
+  }
+
+
+ /* int sectionCanIncrease;
+int sectionMustIncrease;
+float sectionIncreaseSpeed;
+float sectionIncreaseRadius;
+float sectionIncreaseMax;*/
+
+if( sectionCanIncrease == 1){
+
+}
+
+if( sectionMustIncrease == 1 ){
+
+  float n = sectionIncreaseNoise * hash( float(pID)) + ( 1. - sectionIncreaseNoise );
+  vert.section += sectionIncreaseSpeed * _Delta * n;
+
+}
+
+  if( vert.section > sectionIncreaseMax){
+    vert.section = sectionIncreaseMax;
+  }
 
   vert.debug = float3( 0 , 1 , 0);
  

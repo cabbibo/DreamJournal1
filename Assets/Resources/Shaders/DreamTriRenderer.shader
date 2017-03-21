@@ -1,5 +1,4 @@
-﻿Shader "Custom/DreamLineRenderer" {
-
+﻿Shader "Custom/DreamTriRenderer" {
 
   SubShader{
 
@@ -43,25 +42,9 @@
         varyings o;
 
 
-        int idDiv = (id /2);
-        int mVal = id % 2;
-
-        int floorV = (idDiv /3);
-
-        int triID = idDiv %3;
-        int other = idDiv +1;////floorV + ((idDiv+1) % 3); 
-        if( triID == 2 ){
-        	other -= 3;
-        }
-
-        Vert v = _vertBuffer[ idDiv ];
+        Vert v = _vertBuffer[ id ];
     
 
-        if( mVal == 1 ){
-
-        	v.pos += float3( .1 , 0, 0);
-        	v = _vertBuffer[ other ];
-        }
 
         float3 fPos = v.pos;
 
@@ -70,13 +53,13 @@
        //mul( b.transform, float4(fPos,1) ).xyz;
 
 
-				o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
-				o.worldPos = fPos;
-				o.eye = _WorldSpaceCameraPos - o.worldPos;
+		o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
+		o.worldPos = fPos;
+		o.eye = _WorldSpaceCameraPos - o.worldPos;
 	
-				o.nor = float3(0,0,0);
-				o.uv = float2(0,0);
-        o.debug = float3( 0 , 0 , 0);
+		o.nor = v.nor;
+		o.uv = v.uv;
+        o.debug = float3( clamp( v.section -3 ,0 ,1)  , clamp( v.section -4 ,0 ,1) , clamp( v.section -5 ,0 ,1));
 
         return o;
 

@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DisplayVertBufferWithPoints : MonoBehaviour {
-
+public class RenderDreamTriangles : MonoBehaviour {
 
 	public Material m;
-	public tBuffer  tBuf;
-	public vBuffer  vBuf;
+	public dreamVertBuffer vBuf;
 
+	
 	// Use this for initialization
 	void Start () {
 		
@@ -16,21 +15,14 @@ public class DisplayVertBufferWithPoints : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
-		//print("hmm");
 		
 	}
 
 	void OnRenderObject(){
 
-		//print("ss");
 		m.SetPass(0);
-
 		m.SetBuffer( "_vertBuffer", vBuf._buffer );
-
-		//Graphics.DrawProcedural(MeshTopology.Points, vBuf.vertCount );
-		Graphics.DrawProcedural(MeshTopology.Triangles, vBuf.vertCount * 3 );
-
+		Graphics.DrawProcedural(MeshTopology.Triangles, vBuf.fullVertCount );
 
 	}
 }

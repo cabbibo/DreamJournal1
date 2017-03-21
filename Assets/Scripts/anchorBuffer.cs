@@ -9,21 +9,6 @@ public class anchorBuffer : MonoBehaviour {
   private Mesh[] meshes;
 
 
-  public int SIZE = 8;
-
-  int threadX;
-  int threadY;
-  int threadZ;
-
-  int strideX;
-  int strideY;
-  int strideZ;
-  
-  private int gridX { get { return threadX * strideX; } }
-  private int gridY { get { return threadY * strideY; } }
-  private int gridZ { get { return threadZ * strideZ; } }
-
-  public int vertexCount { get { return gridX * gridY * gridZ; } }
 
   private int[]     triangles;
   private Vector4[] tangents;
@@ -40,6 +25,7 @@ public class anchorBuffer : MonoBehaviour {
   private Color[]   t_colors;
 
   public ComputeBuffer _buffer;
+  public int numVerts;
 
   struct Anchor{
 
@@ -55,7 +41,7 @@ public class anchorBuffer : MonoBehaviour {
     
   };
 
-  private int AnchorStructSize = 3+3+3+3+2+3+1+1;
+  private int AnchorStructSize = 3+3+3+3+2+3+1+1+1;
 
 
   // Use this for initialization
@@ -76,14 +62,7 @@ public class anchorBuffer : MonoBehaviour {
 
   public void PopulateBuffer(){
 
-    threadX = SIZE;
-    threadY = SIZE;
-    threadZ = SIZE;
-
-    strideX = SIZE;
-    strideY = SIZE;
-    strideZ = SIZE;
-
+    
 
 
     meshes = new Mesh[ meshObjects.Length ];
@@ -121,7 +100,7 @@ public class anchorBuffer : MonoBehaviour {
 
     }
 
-    if( triLength > vertexCount ){ print( "NOT POSSIBLE BB"); }else{ print( "possible bb : " + triLength ); print( vertexCount );}
+   // if( triLength > vertexCount ){ print( "NOT POSSIBLE BB"); }else{ print( "possible bb : " + triLength ); print( vertexCount );}
 
     triangles   = new int[ triLength ];
     tangents    = new Vector4[ tanLength ];
@@ -181,7 +160,11 @@ public class anchorBuffer : MonoBehaviour {
     }
 
 
+    numVerts = triLength;
 
+   //print( triLength);
+   //print( triangles.Length);
+   //print( numVerts);
 
     createAnchorBuffer();
 
@@ -200,10 +183,10 @@ public class anchorBuffer : MonoBehaviour {
 
   void createAnchorBuffer(){
 
-    _buffer = new ComputeBuffer( vertexCount , AnchorStructSize * sizeof(float) );    
+    _buffer = new ComputeBuffer( numVerts , AnchorStructSize * sizeof(float) );    
     //print( AnchorStructSize );
     //print( AnchorStructSize * vc ); 
-    float[] inValues = new float[ AnchorStructSize * vertexCount ]; 
+    float[] inValues = new float[ AnchorStructSize * numVerts ]; 
 
           // Used for assigning to our buffer;
     int index = 0;

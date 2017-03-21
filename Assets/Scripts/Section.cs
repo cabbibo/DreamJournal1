@@ -6,7 +6,13 @@ public class Section : MonoBehaviour {
 
 	public DREAMJOURNAL journal;
 
-	public anchorBuffer anchorBuffer;
+	public int sectionCanIncrease;
+	public int sectionMustIncrease;
+	public float sectionIncreaseSpeed;
+	public float sectionIncreaseRadius;
+	public float sectionIncreaseMax;
+	public float sectionIncreaseNoise;
+
 
 	// Use this for initialization
 	void Start () {
