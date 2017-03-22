@@ -1,5 +1,7 @@
 ﻿Shader "Custom/DreamTriRenderer" {
-
+Properties {
+        _RoomTexture ("roomTexture", 2D) = "white" {}
+    }
   SubShader{
 
   	
@@ -17,6 +19,9 @@
 
       #include "UnityCG.cginc"
       #include "Chunks/DreamVertStruct.cginc"
+
+
+      uniform sampler2D _RoomTexture;
 
 
 
@@ -59,6 +64,7 @@
 	
 		o.nor = v.nor;
 		o.uv = v.uv;
+
         o.debug = float3( clamp( v.section -3 ,0 ,1)  , clamp( v.section -4 ,0 ,1) , clamp( v.section -5 ,0 ,1));
 
         return o;
@@ -67,7 +73,7 @@
       }
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
-      	float3 col = v.debug;
+      	float3 col = tex2D( _RoomTexture , v.uv ).xyz;// v.nor * .5 + .5;
 
         return float4( col , 1. );
 

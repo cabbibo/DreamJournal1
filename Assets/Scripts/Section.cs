@@ -6,6 +6,8 @@ public class Section : MonoBehaviour {
 
 	public DREAMJOURNAL journal;
 
+	public AudioClip clip;
+	
 	public int sectionCanIncrease;
 	public int sectionMustIncrease;
 	public float sectionIncreaseSpeed;

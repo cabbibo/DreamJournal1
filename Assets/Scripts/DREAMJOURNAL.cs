@@ -6,6 +6,11 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public GameObject CameraRig;
 
+	public Texture roomTexture;
+	public HumanBuffer humanBuffer;
+
+	public AudioClip pageTurnClip;
+
 	public anchorBuffer roomBuffer;
 	public anchorBuffer spacePuppyBuffer;
 	public anchorBuffer starBuffer;
@@ -33,6 +38,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 		currentSectionID = -1;
 		NextSection();
+		NextSection();
 	}
 
 	void OnDisable(){
@@ -42,6 +48,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		starBuffer.ReleaseBuffer();
 		
 		updater.OnBeforeDispatch -= updateDream;
+
 	}
 
 	void updateDream(ComputeShader computeShader , int _kernel){
