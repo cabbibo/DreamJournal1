@@ -40,6 +40,7 @@ Properties {
           float3 worldPos : TEXCOORD6;
           float3 debug    : TEXCOORD7;
           float3 art      : TEXCOORD8;
+          float3 og       : TEXCOORD9;
 
       };
 
@@ -66,11 +67,12 @@ Properties {
 		o.worldPos = fPos;
 		o.eye = _WorldSpaceCameraPos - o.worldPos;
     o.art = ArtifactPos - o.worldPos;
+    o.og = v.pos - v.targetPos;
 	
 		o.nor = v.nor;
 		o.uv = v.uv;
 
-        o.debug = float3( clamp( v.section -3 ,0 ,1)  , clamp( v.section -4 ,0 ,1) , clamp( v.section -5 ,0 ,1));
+        o.debug = float3( clamp( v.section - 3 ,0 ,1)  , clamp( v.section -4 ,0 ,1) , clamp( v.section -5 ,0 ,1));
 
         return o;
 
@@ -82,12 +84,16 @@ Properties {
         float3 roomCol = tex2D( _RoomTexture , v.uv ).xyz;
 
 
-
-        float pulseCol = roomCol * (1 / (2*(1.5 + .9*sin(4*_Time.y))*length( v.art)+ .1));
+        float m = 1;//dot( v.nor , normalize( v.art ));
+        float3 pulseCol = m * roomCol * (1 / (2*(1.5 + .9*sin(4*_Time.y))*length( v.art)+ .1));
 
 
       	float3 col = lerp( roomCol , pulseCol , clamp(smoothedSection,0,1) );// v.nor * .5 + .5;
+       
 
+        float3 rainbowCol = normalize( v.nor ) * .5 + .5;
+        float3 gooeyCol = lerp( roomCol , rainbowCol , clamp((length(v.og)-.06) * 10,0,1));
+        col = lerp( col , gooeyCol , clamp(smoothedSection-1,0,1));
         return float4( col , 1. );
 
 

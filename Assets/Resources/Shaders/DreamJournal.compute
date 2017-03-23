@@ -154,7 +154,7 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
   //Percolate upwards
 
   if( vert.section == 0){
-
+    currentTarget = roomAnchor;
   }
 
 
@@ -207,10 +207,12 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
     float3 fPos = roomAnchor.pos + 2 * roomAnchor.pos * (1 +hash( float(pID) ));
 
-    force += ( fPos - vert.pos ) * (vert.section -3);
+    float destruct = clamp((vert.section -3.1) * 10.,0,1);
+    force += ( fPos - vert.pos ) * destruct;
     dampening = .8;
 
-    force += keepItTogether * 1.2;// * ( 1-vert.section);
+
+    force += keepItTogether * 1.2 * destruct;// * ( 1-vert.section);
 
   }
   // whirlWind
@@ -269,7 +271,14 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
   vert.pos += vert.vel;
 
   vert.vel *= dampening;
+  vert.targetPos = currentTarget.pos;
 
+  vert.nor = normalize(cross(vert.pos - v1.pos , vert.pos - v2.pos));
+
+
+  float maxSection = max( max( vert.section , v1.section),v2.section);
+
+  vert.section = maxSection;
   //vert.pos = roomAnchor.pos;
   //vert.uv = roomAnchor.uv;
   if( _SET == 1 ){

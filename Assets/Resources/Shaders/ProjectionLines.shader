@@ -51,7 +51,7 @@
     
 
         float3 dir = v.pos - CenterPos;
-    		float3 fPos = CenterPos + dir * raysOn;
+    		float3 fPos = CenterPos + dir * raysOn * clamp( (v.section -3.1) * 10, 0, 1);
         if( mVal == 1 ){
 
         	fPos = CenterPos;

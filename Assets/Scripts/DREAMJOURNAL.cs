@@ -121,7 +121,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		}
 
 
-		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .1f );
+		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .5f );
 
 	}
 
