@@ -23,6 +23,9 @@ Properties {
 
       uniform sampler2D _RoomTexture;
 
+      uniform float smoothedSection;
+      uniform float3 ArtifactPos;
+
 
 
 
@@ -36,6 +39,7 @@ Properties {
           float3 eye      : TEXCOORD5;
           float3 worldPos : TEXCOORD6;
           float3 debug    : TEXCOORD7;
+          float3 art      : TEXCOORD8;
 
       };
 
@@ -61,6 +65,7 @@ Properties {
 		o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 		o.worldPos = fPos;
 		o.eye = _WorldSpaceCameraPos - o.worldPos;
+    o.art = ArtifactPos - o.worldPos;
 	
 		o.nor = v.nor;
 		o.uv = v.uv;
@@ -73,7 +78,15 @@ Properties {
       }
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
-      	float3 col = tex2D( _RoomTexture , v.uv ).xyz;// v.nor * .5 + .5;
+
+        float3 roomCol = tex2D( _RoomTexture , v.uv ).xyz;
+
+
+
+        float pulseCol = roomCol * (1 / (2*(1.5 + .9*sin(4*_Time.y))*length( v.art)+ .1));
+
+
+      	float3 col = lerp( roomCol , pulseCol , clamp(smoothedSection,0,1) );// v.nor * .5 + .5;
 
         return float4( col , 1. );
 

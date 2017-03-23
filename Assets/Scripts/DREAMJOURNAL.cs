@@ -38,6 +38,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public float raysOn = 0;
 
+	public float smoothedSection = 0;
+
 	void OnEnable() {
 
 
@@ -119,6 +121,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 		}
 
 
+		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .1f );
+
 	}
 
 
@@ -146,6 +150,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 		// Render the Triangles
 		material.SetPass(0);
+		material.SetFloat( "smoothedSection" , smoothedSection);
+		material.SetVector( "ArtifactPos" , Artifact.transform.position );
 		material.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
 		Graphics.DrawProcedural(MeshTopology.Triangles, dreamBuffer.fullVertCount );
 

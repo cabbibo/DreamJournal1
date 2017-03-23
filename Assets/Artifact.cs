@@ -24,7 +24,7 @@ public class Artifact : MonoBehaviour {
 	void FixedUpdate () {
 
 		v = targetPos - transform.position;
-		rb.AddForce( v * .1f );
+		rb.AddForce( v );
 		
 	}
 

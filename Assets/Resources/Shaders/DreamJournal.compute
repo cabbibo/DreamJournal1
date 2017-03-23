@@ -203,10 +203,14 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
 //Attract to stars
   if( vert.section >= 3 && vert.section < 4 ){
-    currentTarget = starAnchor;
+    currentTarget = roomAnchor;
 
-    force += starDif * (vert.section -3);
-    dampening = .3;
+    float3 fPos = roomAnchor.pos + 2 * roomAnchor.pos * (1 +hash( float(pID) ));
+
+    force += ( fPos - vert.pos ) * (vert.section -3);
+    dampening = .8;
+
+    force += keepItTogether * 1.2;// * ( 1-vert.section);
 
   }
   // whirlWind
