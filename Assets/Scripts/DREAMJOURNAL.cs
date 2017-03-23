@@ -6,6 +6,14 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public GameObject CameraRig;
 
+	public GameObject Artifact;
+
+	public Material material;
+
+	public Material rayMaterial;
+
+	public dreamVertBuffer  dreamBuffer;
+
 	public Texture roomTexture;
 	public HumanBuffer humanBuffer;
 
@@ -28,7 +36,13 @@ public class DREAMJOURNAL : MonoBehaviour {
 	public int currentSectionID = -1;
 	public Section currentSection;
 
+	public float raysOn = 0;
+
 	void OnEnable() {
+
+
+
+		Artifact.GetComponent<Artifact>().MakeDead();
 
 		roomBuffer.PopulateBuffer();
 		spacePuppyBuffer.PopulateBuffer();
@@ -38,7 +52,12 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 		currentSectionID = -1;
 		NextSection();
-		NextSection();
+
+		updater.SET();
+
+
+
+
 	}
 
 	void OnDisable(){
@@ -73,10 +92,6 @@ public class DREAMJOURNAL : MonoBehaviour {
 	}
 
 
-	void OnRenderObject(){
-		//print("hello");
-	}
-
 
 	
 	// Update is called once per frame
@@ -98,16 +113,59 @@ public class DREAMJOURNAL : MonoBehaviour {
 			CameraRig.transform.position += Vector3.forward * .02f;
 		}
 
+		if( currentSectionID >= 3 ){
+			raysOn += .01f;
+			raysOn = Mathf.Clamp( raysOn , 0 , 1 );
+		}
+
 
 	}
 
 
 
-	void NextSection(){
+	public void NextSection(){
 		print( "newSection");
 		currentSectionID ++;
+
+		if( currentSectionID == 1 ){
+			print( "ya firssts");
+
+			Artifact.GetComponent<Artifact>().MakeAlive();
+		}
+
+		if( currentSectionID == 2 ){
+
+			Artifact.GetComponent<Artifact>().MoveUp();
+
+		}
 		currentSection = sections[currentSectionID];
 	}
+
+
+	void OnRenderObject(){
+
+		// Render the Triangles
+		material.SetPass(0);
+		material.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
+		Graphics.DrawProcedural(MeshTopology.Triangles, dreamBuffer.fullVertCount );
+
+
+		rayMaterial.SetPass(0);
+		rayMaterial.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
+		rayMaterial.SetBuffer( "_artifactBuffer", spacePuppyBuffer._buffer );
+
+		rayMaterial.SetVector( "CenterPos" , Artifact.transform.position );
+		rayMaterial.SetFloat( "raysOn" , raysOn );
+
+		Graphics.DrawProcedural(MeshTopology.Lines, (spacePuppyBuffer.numVerts / 16) * 2 );
+
+
+		// Render the Rays
+
+
+
+	}
+
 
 
 

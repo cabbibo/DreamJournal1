@@ -20,16 +20,20 @@ public class dreamVertUpdater : MonoBehaviour {
 
 		_kernel = computeShader.FindKernel("CSMain");
 
+		SET();
+
 
 	   	
 	   	//computeShader.Dispatch( _kernel, vertBuffer.SIZE , vertBuffer.SIZE , vertBuffer.SIZE );
 		
 	}
 
-	public void DispatchComputeShader(){
+	public void DispatchComputeShader(int SET){
+
+		computeShader.SetInt("_SET" ,SET);
 
 		computeShader.SetFloat( "_Delta"    , Time.deltaTime );
-    computeShader.SetFloat( "_Time"         , Time.time      );
+    	computeShader.SetFloat( "_Time"         , Time.time      );
 
 		computeShader.SetInt( "StrideX" , vertBuffer.strideX );
 		computeShader.SetInt( "StrideY" , vertBuffer.strideY );
@@ -38,19 +42,25 @@ public class dreamVertUpdater : MonoBehaviour {
 		if(OnBeforeDispatch != null) OnBeforeDispatch( computeShader , _kernel);
 
 		computeShader.SetBuffer( _kernel , "vertBuffer"     , vertBuffer._buffer );
-	  computeShader.Dispatch( _kernel, vertBuffer.threadX , vertBuffer.threadY , vertBuffer.threadZ );
+	  	computeShader.Dispatch( _kernel, vertBuffer.threadX , vertBuffer.threadY , vertBuffer.threadZ );
 
 	}
 	
 	// Update is called once per frame
 	void FixedUpdate () {
 
-		if( update == true ){ DispatchComputeShader(); }
+		if( update == true ){ DispatchComputeShader(0); }
 		
 	}
 
 	public void updateOnce(){
-		DispatchComputeShader();
+		DispatchComputeShader(0);
+	}
+
+	public void SET(){
+		
+		DispatchComputeShader(1);
+		//computeShader.SetInt("_SET" ,0);
 	}
 		
 	

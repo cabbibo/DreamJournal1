@@ -38,7 +38,7 @@ int _NumberHumans;
 
 */
 
-int _Set;
+int _SET;
 
 int sectionCanIncrease;
 int sectionMustIncrease;
@@ -268,7 +268,7 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
   //vert.pos = roomAnchor.pos;
   //vert.uv = roomAnchor.uv;
-  if( _Set == 1 ){
+  if( _SET == 1 ){
     vert.pos = currentTarget.pos;
     vert.nor = currentTarget.nor;
     vert.uv = currentTarget.uv;
