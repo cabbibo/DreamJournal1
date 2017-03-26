@@ -23,7 +23,7 @@ public class Artifact : MonoBehaviour {
 	// Update is called once per frame
 	void FixedUpdate () {
 
-		v = targetPos - transform.position;
+		v = transform.parent.TransformPoint(targetPos) - transform.position;
 		rb.AddForce( v );
 		
 	}

@@ -47,6 +47,9 @@ float sectionIncreaseRadius;
 float sectionIncreaseMax;
 float sectionIncreaseNoise;
 
+float3 _SpacePuppyScale;
+float3 _SpacePuppyPos;
+
 
 int roomLength;
 int starLength;
@@ -62,7 +65,7 @@ RWStructuredBuffer<Anchor> spacePuppyBuffer;
 //RWStructuredBuffer<Pos> ogBuffer;
 //RWStructuredBuffer<float4x4> transBuffer;
 //RWStructuredBuffer<Human> humanBuffer;
-//RWStructuredBuffer<float4> audioBuffer;
+RWStructuredBuffer<float4> audioBuffer;
 
 
 int _AudioLength;
@@ -220,12 +223,12 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
     currentTarget = starAnchor;
 
-    force += keepItTogether * .2 * ( vert.section-4);
+    force += keepItTogether * .1 * ( vert.section-4);
 
     force += voidForce( vert.pos ) * ( vert.section-4);
 
-     if( vert.pos.z < -20 ){
-          vert.pos = float3( vert.pos.x , vert.pos.y , 20);
+     if( vert.pos.z < -30 ){
+          vert.pos = float3( vert.pos.x , vert.pos.y , -4);
           vert.vel = float3( 0 ,0,0);
           vert.debug.z = 1;
         }
@@ -255,7 +258,91 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
 
     force += 5 * spacePuppyDif * (vert.section -5);
-    dampening = .6;
+    dampening = .3;
+
+
+    currentTarget = spacePuppyAnchor;
+
+  }
+
+    float3 audioForce = float3(0,0,0);
+    for( int i = 0; i < _AudioLength/4; i++ ){
+
+
+      // rP = repeller Position
+      float3 rP = float3( hash(float(i)) ,hash(float(i*100)), 0);
+      rP -= float3( .5 , .5 , 0);
+      //rP = normalize( rP );
+      rP *= .5;
+
+      rP *= 300;//_SpacePuppyScale;
+      rP += _SpacePuppyPos;
+  
+      float3 dif = (rP-vert.pos);
+
+      if( length( dif ) < 60.2 ){
+        audioForce += (vert.section - 6) * length(audioBuffer[i]) * (normalize(dif)/ (length(dif) * .01+1)) * 100;
+      }
+
+
+    
+    }
+
+  if( vert.section >= 6 && vert.section < 7 ){
+
+
+    force += 2 * spacePuppyDif * (vert.section - 6);
+    dampening = .9;
+
+    force += audioForce;
+
+
+
+
+    currentTarget = spacePuppyAnchor;
+
+  }
+
+  if( vert.section >= 7 && vert.section < 8 ){
+
+
+    force += .1 * spacePuppyDif;
+    dampening = .95;
+
+    force += audioForce  * .1;
+
+
+
+
+    currentTarget = spacePuppyAnchor;
+
+  }
+
+  if( vert.section >= 8 && vert.section < 9 ){
+
+
+    force += .1 * spacePuppyDif;
+    dampening = .95;
+
+    force += audioForce  * .1;
+
+
+
+
+    currentTarget = spacePuppyAnchor;
+
+  }
+
+  if( vert.section >= 9 && vert.section < 10 ){
+
+
+    force += 5.1 * roomDif;
+    dampening = .95;
+
+    force += audioForce  * .01;
+
+
+
 
     currentTarget = spacePuppyAnchor;
 

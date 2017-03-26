@@ -7,6 +7,9 @@
     Cull off
     Pass{
 
+			ZWrite Off
+			Blend SrcAlpha OneMinusSrcAlpha
+
 
       CGPROGRAM
       #pragma target 5.0
@@ -80,7 +83,7 @@
       float4 frag (varyings v) : COLOR {
       	float3 col = v.nor * .5 + .5;
 
-        return float4( col , .3 );
+        return float4( col , .1 );
 
 
       }

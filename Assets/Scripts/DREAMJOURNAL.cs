@@ -14,6 +14,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public dreamVertBuffer  dreamBuffer;
 
+	public AudioSourceTexture audioSourceTexture;
+
 	public Texture roomTexture;
 	public HumanBuffer humanBuffer;
 
@@ -77,10 +79,21 @@ public class DREAMJOURNAL : MonoBehaviour {
 		computeShader.SetBuffer( _kernel , "roomBuffer" , roomBuffer._buffer );
 		computeShader.SetBuffer( _kernel , "starBuffer" , starBuffer._buffer );
 		computeShader.SetBuffer( _kernel , "spacePuppyBuffer" , spacePuppyBuffer._buffer );
+		computeShader.SetBuffer( _kernel , "audioBuffer" , audioSourceTexture._buffer );
 
 		computeShader.SetInt("roomLength", roomBuffer.numVerts);
 		computeShader.SetInt("starLength", starBuffer.numVerts);
 		computeShader.SetInt("spacePuppyLength", spacePuppyBuffer.numVerts);
+
+		computeShader.SetInt( "_AudioLength", audioSourceTexture.size );
+		computeShader.SetVector( "_SpacePuppyScale", spacePuppyBuffer.gameObject.transform.localScale );
+
+		//print( spacePuppyBuffer.gameObject.transform.position );
+		computeShader.SetVector( "_SpacePuppyPos", spacePuppyBuffer.gameObject.transform.position );
+
+		computeShader.SetInt( "_AudioLength", audioSourceTexture.size );
+
+
 
 
 		computeShader.SetInt("sectionCanIncrease" , currentSection.sectionCanIncrease);
@@ -104,15 +117,18 @@ public class DREAMJOURNAL : MonoBehaviour {
 		}
 
 		if( currentSectionID >= 5 ){
-			print("ss");
+			//print("ss");
 		}
 		
 	}
 	void FixedUpdate(){
 
 		// move camera away
-		if( currentSectionID == 5){
-			CameraRig.transform.position += Vector3.forward * .02f;
+		if( currentSectionID >= 6){
+			if( CameraRig.transform.position.z < 40 ){
+				CameraRig.transform.position += Vector3.forward * .2f;
+			}
+
 		}
 
 		if( currentSectionID >= 3 ){
