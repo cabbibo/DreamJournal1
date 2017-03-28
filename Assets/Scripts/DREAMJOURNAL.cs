@@ -15,6 +15,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 	public dreamVertBuffer  dreamBuffer;
 
 	public AudioSourceTexture audioSourceTexture;
+	public AudioSource audio;
 
 	public Texture roomTexture;
 	public HumanBuffer humanBuffer;
@@ -88,11 +89,17 @@ public class DREAMJOURNAL : MonoBehaviour {
 		computeShader.SetInt( "_AudioLength", audioSourceTexture.size );
 		computeShader.SetVector( "_SpacePuppyScale", spacePuppyBuffer.gameObject.transform.localScale );
 
+
+
+		computeShader.SetVector( "_ArtifactPos" , Artifact.transform.position );
 		//print( spacePuppyBuffer.gameObject.transform.position );
 		computeShader.SetVector( "_SpacePuppyPos", spacePuppyBuffer.gameObject.transform.position );
+		computeShader.SetVector( "_CameraRigPos", CameraRig.transform.position );
 
 		computeShader.SetInt( "_AudioLength", audioSourceTexture.size );
 
+		SetMatrix( Artifact.transform.localToWorldMatrix , "_ArtifactTransform" , computeShader );
+		SetMatrix( spacePuppyBuffer.gameObject.transform.worldToLocalMatrix , "_SpacePuppyTransform" , computeShader );
 
 
 
@@ -105,6 +112,22 @@ public class DREAMJOURNAL : MonoBehaviour {
 		computeShader.SetFloat("sectionIncreaseNoise" , currentSection.sectionIncreaseNoise );
 
 	}
+
+	void SetMatrix(Matrix4x4 m , string  name , ComputeShader computeShader  ){
+		
+		//Matrix4x4 matrix = t.localToWorldMatrix; 
+		float[] matrixFloats = new float[] 
+		{ 
+		 m[0,0],  m[1, 0],  m[2, 0],  m[3, 0], 
+		 m[0,1],  m[1, 1],  m[2, 1],  m[3, 1], 
+		 m[0,2],  m[1, 2],  m[2, 2],  m[3, 2], 
+		 m[0,3],  m[1, 3],  m[2, 3],  m[3, 3] 
+		}; 
+
+		computeShader.SetFloats( name , matrixFloats );
+
+	}
+
 
 
 
@@ -125,8 +148,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 		// move camera away
 		if( currentSectionID >= 6){
-			if( CameraRig.transform.position.z < 40 ){
-				CameraRig.transform.position += Vector3.forward * .2f;
+			if( CameraRig.transform.position.z < 100 ){
+				CameraRig.transform.position += Vector3.forward * .1f;
 			}
 
 		}
@@ -140,6 +163,9 @@ public class DREAMJOURNAL : MonoBehaviour {
 		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .5f );
 
 	}
+
+
+
 
 
 
@@ -158,6 +184,14 @@ public class DREAMJOURNAL : MonoBehaviour {
 			Artifact.GetComponent<Artifact>().MoveUp();
 
 		}
+
+		if( currentSectionID == 6 ){
+			audio.Play();
+		}
+
+		if( currentSectionID == 9 ){
+			Artifact.GetComponent<Artifact>().MakeLight();
+		}
 		currentSection = sections[currentSectionID];
 	}
 
@@ -171,6 +205,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 		material.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
 		Graphics.DrawProcedural(MeshTopology.Triangles, dreamBuffer.fullVertCount );
 
+	
+
 
 		rayMaterial.SetPass(0);
 		rayMaterial.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
@@ -179,7 +215,9 @@ public class DREAMJOURNAL : MonoBehaviour {
 		rayMaterial.SetVector( "CenterPos" , Artifact.transform.position );
 		rayMaterial.SetFloat( "raysOn" , raysOn );
 
-		Graphics.DrawProcedural(MeshTopology.Lines, (spacePuppyBuffer.numVerts / 16) * 2 );
+		float totalLines = (float)(((float)spacePuppyBuffer.numVerts / 16) * 2 * Mathf.Clamp(raysOn * 10,0,1));
+
+		Graphics.DrawProcedural(MeshTopology.Lines, (int)totalLines );
 
 
 		// Render the Rays

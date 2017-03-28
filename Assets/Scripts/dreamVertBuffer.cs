@@ -31,12 +31,14 @@ public class dreamVertBuffer : MonoBehaviour {
 	  public Vector3 targetPos;
 	  public Vector3 ids;
 	  public float 	 section;
+	  public Vector3 artifactPos;
+
 	  public Vector3 debug;
 	};
 
 
 
-	private int vertStructSize = 3+3+3+2+3+3+1+3;
+	private int vertStructSize = 3+3+3+2+3+3+1+3+3;
 	
 	// Use this for initialization
 	void OnEnable() {
@@ -98,6 +100,10 @@ public class dreamVertBuffer : MonoBehaviour {
 			//section
 			vertValues[ index++ ] = 0;
 
+			// ArtifactPos
+			vertValues[ index++ ] = 0;
+			vertValues[ index++ ] = 0;
+			vertValues[ index++ ] = 0;
 
 			// Debug
 			vertValues[ index++ ] = 1;

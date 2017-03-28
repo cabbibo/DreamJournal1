@@ -7,6 +7,7 @@ struct Vert {
   float3 targetPos;
   float3 ids;
   float  section;
+  float3 artifactPos;
   float3 debug;
 
 };

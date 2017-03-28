@@ -49,6 +49,11 @@ float sectionIncreaseNoise;
 
 float3 _SpacePuppyScale;
 float3 _SpacePuppyPos;
+float3 _CameraRigPos;
+float3 _ArtifactPos;
+
+float4x4 _ArtifactTransform;
+float4x4 _SpacePuppyTransform;
 
 
 int roomLength;
@@ -160,7 +165,14 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     currentTarget = roomAnchor;
   }
 
+  float3 artifactPos = mul(_SpacePuppyTransform , float4(spacePuppyAnchor.pos,1) ).xyz;
+         artifactPos = mul( _ArtifactTransform , float4( artifactPos * .08 , 1)).xyz;
+  
+  vert.artifactPos = artifactPos;
 
+  float3 artifactDif = -( vert.pos - artifactPos);
+
+  //roomDif = -(vert.pos - artifactPos);
   if( vert.section >= 0 && vert.section <1 ){
 
     currentTarget = roomAnchor;
@@ -309,7 +321,7 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     force += .1 * spacePuppyDif;
     dampening = .95;
 
-    force += audioForce  * .1;
+    force += audioForce  * .3;
 
 
 
@@ -321,12 +333,10 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
   if( vert.section >= 8 && vert.section < 9 ){
 
 
-    force += .1 * spacePuppyDif;
-    dampening = .95;
+    force += .4 * artifactDif;
+    dampening = .3;
 
-    force += audioForce  * .1;
-
-
+   // force += audioForce  * .1;
 
 
     currentTarget = spacePuppyAnchor;
@@ -335,11 +345,11 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
   if( vert.section >= 9 && vert.section < 10 ){
 
+    
+    force += 5.1 * (roomDif + _ArtifactPos - float3( 0 , 20 , 0 ));
+    dampening = .4;
 
-    force += 5.1 * roomDif;
-    dampening = .95;
-
-    force += audioForce  * .01;
+    //force += audioForce  * .01;
 
 
 

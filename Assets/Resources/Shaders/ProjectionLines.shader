@@ -53,11 +53,11 @@
         Vert v = _vertBuffer[ idDiv * 16 ];
     
 
-        float3 dir = v.pos - CenterPos;
+        float3 dir = v.pos - v.artifactPos;
     		float3 fPos = CenterPos + dir * raysOn * clamp( (v.section -3.1) * 10, 0, 1);
         if( mVal == 1 ){
 
-        	fPos = CenterPos;
+        	fPos = v.artifactPos;
         }
 
        // float3 fPos = v.pos;
