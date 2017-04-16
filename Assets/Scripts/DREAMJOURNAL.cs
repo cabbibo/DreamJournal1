@@ -16,6 +16,11 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public AudioSourceTexture audioSourceTexture;
 	public AudioSource audio;
+	public AudioSource words;
+
+	public AudioSource tmpLoop;
+	public AudioSource primaryLoop;
+	public AudioSource secondaryLoop;
 
 	public Texture roomTexture;
 	public HumanBuffer humanBuffer;
@@ -160,7 +165,11 @@ public class DREAMJOURNAL : MonoBehaviour {
 		}
 
 
-		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .5f );
+		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .01f );
+
+		float fadeIn = smoothedSection - (currentSectionID -1);
+		primaryLoop.volume = fadeIn * .1f;
+		secondaryLoop.volume = (1-fadeIn) * .1f;
 
 	}
 
@@ -192,7 +201,28 @@ public class DREAMJOURNAL : MonoBehaviour {
 		if( currentSectionID == 9 ){
 			Artifact.GetComponent<Artifact>().MakeLight();
 		}
+
 		currentSection = sections[currentSectionID];
+
+
+
+		// Flip Flop Loop sources for nice fading!
+		tmpLoop = primaryLoop;
+		primaryLoop = secondaryLoop;
+
+		primaryLoop.clip = currentSection.loop;
+		primaryLoop.Play();
+		primaryLoop.volume = 0;
+
+		secondaryLoop = tmpLoop;
+
+		// Play new words
+		words.clip = currentSection.clip;
+		words.Play();
+
+
+
+
 	}
 
 
