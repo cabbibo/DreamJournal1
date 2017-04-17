@@ -6,6 +6,8 @@ public class Section : MonoBehaviour {
 
 	public DREAMJOURNAL journal;
 
+	public float sectionLength;
+
 	public AudioClip clip;
 	public AudioClip loop;
 	

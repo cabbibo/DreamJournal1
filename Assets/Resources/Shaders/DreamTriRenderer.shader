@@ -1,6 +1,7 @@
 ﻿Shader "Custom/DreamTriRenderer" {
 Properties {
         _RoomTexture ("roomTexture", 2D) = "white" {}
+        _CubeMap( "Cube Map" , Cube ) = "white" {}
     }
   SubShader{
 
@@ -22,6 +23,8 @@ Properties {
 
 
       uniform sampler2D _RoomTexture;
+      uniform sampler2D _Audio;
+      uniform samplerCUBE _CubeMap;
 
       uniform float smoothedSection;
       uniform float3 ArtifactPos;
@@ -72,7 +75,7 @@ Properties {
 		o.nor = v.nor;
 		o.uv = v.uv;
 
-        o.debug = float3( clamp( v.section - 3 ,0 ,1)  , clamp( v.section -4 ,0 ,1) , clamp( v.section -5 ,0 ,1));
+        o.debug = v.debug;//float3( clamp( v.section - 3 ,0 ,1)  , clamp( v.section -4 ,0 ,1) , clamp( v.section -5 ,0 ,1));
 
         return o;
 
@@ -82,6 +85,11 @@ Properties {
       float4 frag (varyings v) : COLOR {
 
         float3 roomCol = tex2D( _RoomTexture , v.uv ).xyz;
+        float3 aCol = tex2D( _Audio , v.uv ).xyz;
+
+        float3 refl = reflect( normalize( v.eye) , v.nor );
+
+        float3 cubeCol = texCUBE( _CubeMap , refl ).xyz;
 
 
         float m = 1;//dot( v.nor , normalize( v.art ));
@@ -92,8 +100,12 @@ Properties {
        
 
         float3 rainbowCol = normalize( v.nor ) * .5 + .5;
+        rainbowCol *= cubeCol;
         float3 gooeyCol = lerp( roomCol , rainbowCol , clamp((length(v.og)-.06) * 10,0,1));
         col = lerp( col , gooeyCol , clamp(smoothedSection-1,0,1));
+
+        //col = v.debug;
+        //col = aCol;//cubeCol;
         return float4( col , 1. );
 
 

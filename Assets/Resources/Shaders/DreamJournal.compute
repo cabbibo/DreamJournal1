@@ -1,8 +1,8 @@
 ﻿#pragma kernel CSMain
  
-#define threadX 10
-#define threadY 10
-#define threadZ 10
+#define threadX 8
+#define threadY 8
+#define threadZ 8
 
 float _Time;
 float _Delta;
@@ -69,7 +69,7 @@ RWStructuredBuffer<Anchor> spacePuppyBuffer;
 
 //RWStructuredBuffer<Pos> ogBuffer;
 //RWStructuredBuffer<float4x4> transBuffer;
-//RWStructuredBuffer<Human> humanBuffer;
+RWStructuredBuffer<Human> humanBuffer;
 RWStructuredBuffer<float4> audioBuffer;
 
 
@@ -83,6 +83,29 @@ float sdCapsule( float3 p, float3 a, float3 b, float r )
     return length( pa - ba*h ) - r;
 }
 
+
+float3 getHandForce( Hand h , Vert v ){
+
+  float3 dir = mul( h.localToWorld , float4( 0 ,0,1 ,0)).xyz;
+  float rad = .5 * length( v.pos - h.pos );
+  float distance = sdCapsule( v.pos , h.pos , h.pos + dir*100  ,  rad );
+
+  float3 force = float3( 0,0,0);
+  if( distance < 0 ){
+    force = dir * -distance;
+   // v.debug = float3( 0 , 0 , 1 );
+  }else{
+    //v.debug = float3( 0 , 1 , 0);
+
+  }
+
+  //v.debug = float3( 1,0,1);
+
+  return force;
+
+
+
+}
 
 float3 voidForce(float3 p ){
 
@@ -146,6 +169,26 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
 
 
+  float3 fHandForce = float3( 0,0,0);
+  for( int i = 0; i < _NumberHumans; i ++){
+    float3 f1 = getHandForce( humanBuffer[i].hand1 , vert );
+    float3 f2 = getHandForce( humanBuffer[i].hand2 , vert );
+
+    if( length( f1 )> 0){
+      vert.debug = float3( 1 ,0 ,1);
+    }
+
+    if( length( f2 )> 0){
+      vert.debug = float3( 1 ,0 ,1);
+    }
+
+    fHandForce += f1 * ( .3 -humanBuffer[i].hand1.trigger ) + f2* ( .3 -humanBuffer[i].hand2.trigger ) ;
+
+  } 
+
+
+
+
   
 
   float3 force = float3( 0 , 0 , 0 );
@@ -193,6 +236,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     force += 10 * roomDif;
     dampening = .3;
 
+    force += fHandForce;
+
 
     vert.debug = float3( 0 , 1 , 0 );
   }
@@ -207,6 +252,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     force += roomDif * (( 1 - gooeyness ) * .5 + .4); 
 
     force += handForce * gooeyness; 
+
+    force += fHandForce;
 
     dampening = gooeyness * .1 + .85;
 
@@ -226,6 +273,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     force += ( fPos - vert.pos ) * destruct;
     dampening = .8;
 
+    force += fHandForce;
+
 
     force += keepItTogether * 1.2 * destruct;// * ( 1-vert.section);
 
@@ -238,6 +287,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     force += keepItTogether * .1 * ( vert.section-4);
 
     force += voidForce( vert.pos ) * ( vert.section-4);
+
+    force += fHandForce;
 
      if( vert.pos.z < -30 ){
           vert.pos = float3( vert.pos.x , vert.pos.y , -4);
@@ -308,6 +359,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
     force += audioForce;
 
+    force += fHandForce;
+
 
 
 
@@ -322,6 +375,8 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
     dampening = .95;
 
     force += audioForce  * .3;
+
+    force += fHandForce;
 
 
 
@@ -346,10 +401,12 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
   if( vert.section >= 9 && vert.section < 10 ){
 
     
-    force += 5.1 * (roomDif + _ArtifactPos - float3( 0 , 20 , 0 ));
-    dampening = .4;
+    force += .1 * (roomDif + _ArtifactPos - float3( 0 , 20 , 0 ));
+    dampening = .8;
 
     //force += audioForce  * .01;
+
+    force += fHandForce;
 
 
 
@@ -394,6 +451,8 @@ float sectionIncreaseMax;*/
 
 if( sectionCanIncrease == 1){
 
+  vert.section += length( fHandForce)  * .005;
+
 }
 
 if( sectionMustIncrease == 1 ){
@@ -407,7 +466,8 @@ if( sectionMustIncrease == 1 ){
     vert.section = sectionIncreaseMax;
   }
 
-  vert.debug = float3( 0 , 1 , 0);
+
+  //vert.debug = float3( 0 , 1 , 0);
  
 
   vertBuffer[pID] = vert;

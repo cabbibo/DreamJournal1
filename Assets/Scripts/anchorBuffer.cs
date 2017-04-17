@@ -182,7 +182,7 @@ public class anchorBuffer : MonoBehaviour {
   }
 
   void createAnchorBuffer(){
-
+    print( numVerts);
     _buffer = new ComputeBuffer( numVerts , AnchorStructSize * sizeof(float) );    
     //print( AnchorStructSize );
     //print( AnchorStructSize * vc ); 

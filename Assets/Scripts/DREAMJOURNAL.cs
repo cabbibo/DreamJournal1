@@ -14,9 +14,11 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public dreamVertBuffer  dreamBuffer;
 
-	public AudioSourceTexture audioSourceTexture;
+	public AudioListenerTexture audioListenerTexture;
 	public AudioSource audio;
+	public AudioLowPassFilter alpf;
 	public AudioSource words;
+	public AudioSource pageTurn;
 
 	public AudioSource tmpLoop;
 	public AudioSource primaryLoop;
@@ -25,7 +27,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 	public Texture roomTexture;
 	public HumanBuffer humanBuffer;
 
-	public AudioClip pageTurnClip;
+	//public AudioClip pageTurnClip;
 
 	public anchorBuffer roomBuffer;
 	public anchorBuffer spacePuppyBuffer;
@@ -85,13 +87,15 @@ public class DREAMJOURNAL : MonoBehaviour {
 		computeShader.SetBuffer( _kernel , "roomBuffer" , roomBuffer._buffer );
 		computeShader.SetBuffer( _kernel , "starBuffer" , starBuffer._buffer );
 		computeShader.SetBuffer( _kernel , "spacePuppyBuffer" , spacePuppyBuffer._buffer );
-		computeShader.SetBuffer( _kernel , "audioBuffer" , audioSourceTexture._buffer );
+		computeShader.SetBuffer( _kernel , "audioBuffer" , audioListenerTexture._buffer );
+		computeShader.SetBuffer( _kernel , "humanBuffer" , humanBuffer._buffer );
 
+		computeShader.SetInt("_NumberHumans", humanBuffer.numberHumans );
 		computeShader.SetInt("roomLength", roomBuffer.numVerts);
 		computeShader.SetInt("starLength", starBuffer.numVerts);
 		computeShader.SetInt("spacePuppyLength", spacePuppyBuffer.numVerts);
 
-		computeShader.SetInt( "_AudioLength", audioSourceTexture.size );
+		computeShader.SetInt( "_AudioLength", audioListenerTexture.size );
 		computeShader.SetVector( "_SpacePuppyScale", spacePuppyBuffer.gameObject.transform.localScale );
 
 
@@ -101,7 +105,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		computeShader.SetVector( "_SpacePuppyPos", spacePuppyBuffer.gameObject.transform.position );
 		computeShader.SetVector( "_CameraRigPos", CameraRig.transform.position );
 
-		computeShader.SetInt( "_AudioLength", audioSourceTexture.size );
+		computeShader.SetInt( "_AudioLength", audioListenerTexture.size );
 
 		SetMatrix( Artifact.transform.localToWorldMatrix , "_ArtifactTransform" , computeShader );
 		SetMatrix( spacePuppyBuffer.gameObject.transform.worldToLocalMatrix , "_SpacePuppyTransform" , computeShader );
@@ -135,12 +139,20 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 
 
+	public void ArtifactTouched(){
+		print( currentSectionID);
+		if( currentSectionID == 1 ){
+			CancelInvoke();
+			NextSection();
+		}
+	}
 
 	
 	// Update is called once per frame
 	void Update () {
 
 		if (Input.GetKeyDown("space")){
+			CancelInvoke();
 			NextSection();
 		}
 
@@ -154,7 +166,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		// move camera away
 		if( currentSectionID >= 6){
 			if( CameraRig.transform.position.z < 100 ){
-				CameraRig.transform.position += Vector3.forward * .1f;
+				CameraRig.transform.position += Vector3.forward * .03f;
 			}
 
 		}
@@ -163,6 +175,29 @@ public class DREAMJOURNAL : MonoBehaviour {
 			raysOn += .01f;
 			raysOn = Mathf.Clamp( raysOn , 0 , 1 );
 		}
+
+		if( currentSectionID == 6 ){
+			alpf.cutoffFrequency += .1f;
+		}
+
+		if( currentSectionID == 7 ){
+			alpf.cutoffFrequency += .2f;
+		}
+
+		if( currentSectionID == 8 ){
+			alpf.cutoffFrequency += 1;
+		}
+
+		if( currentSectionID == 9 ){
+			alpf.cutoffFrequency -= .1f;
+		}
+
+		if( currentSectionID == 10 ){
+			audio.volume -= .03f;
+			audio.volume = Mathf.Clamp( audio.volume , 0 , 1);
+		}
+
+		alpf.cutoffFrequency = Mathf.Clamp( alpf.cutoffFrequency  , 200 , 10000 );
 
 
 		smoothedSection = Mathf.Lerp( smoothedSection , (float)currentSectionID , .01f );
@@ -181,6 +216,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 	public void NextSection(){
 		print( "newSection");
 		currentSectionID ++;
+
+		pageTurn.Play();
 
 		if( currentSectionID == 1 ){
 			print( "ya firssts");
@@ -203,6 +240,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 		}
 
 		currentSection = sections[currentSectionID];
+
+		Invoke("NextSection", currentSection.sectionLength );
 
 
 
@@ -233,6 +272,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		material.SetFloat( "smoothedSection" , smoothedSection);
 		material.SetVector( "ArtifactPos" , Artifact.transform.position );
 		material.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
+		material.SetTexture("_Audio", audioListenerTexture.AudioTexture );
 		Graphics.DrawProcedural(MeshTopology.Triangles, dreamBuffer.fullVertCount );
 
 	

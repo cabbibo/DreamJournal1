@@ -11,6 +11,7 @@ public class dreamVertBuffer : MonoBehaviour {
 	public int threadX;
 	public int threadY;
 	public int threadZ;
+
 	public int strideX;
 	public int strideY;
 	public int strideZ;

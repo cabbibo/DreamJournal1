@@ -83,9 +83,13 @@ public class Artifact : MonoBehaviour {
 
 	void OnCollisionEnter(Collision c){
 
+		//print("watt");
+		Touched1();
+
+
 	}
 
 	void Touched1(){
-		journal.NextSection();
+		journal.ArtifactTouched();
 	}
 }
