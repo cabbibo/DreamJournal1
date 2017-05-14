@@ -409,11 +409,11 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
   }
 
-  if( vert.section >= 9 && vert.section < 10 ){
+  if( vert.section >= 9 && vert.section < 11 ){
 
     
     force += .1 * (roomDif + _ArtifactPos - float3( 0 , 20 , 0 ));
-    dampening = .8 + .1 * (vert.section - 9);
+    dampening = .8 + .099 * (vert.section - 9);
 
     //force += audioForce  * .01;
 

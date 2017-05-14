@@ -6,6 +6,8 @@ public class DREAMJOURNAL : MonoBehaviour {
 
 	public GameObject CameraRig;
 
+	public GameObject Credits;
+
 	public GameObject Artifact;
 
 	public Material material;
@@ -239,6 +241,13 @@ public class DREAMJOURNAL : MonoBehaviour {
 			Artifact.GetComponent<Artifact>().MakeLight();
 		}
 
+		if( currentSectionID == 10 ){
+			Credits.GetComponent<MeshRenderer>().enabled = true;
+		}
+	
+
+		if( currentSectionID <= 10 ){
+
 		currentSection = sections[currentSectionID];
 
 		Invoke("NextSection", currentSection.sectionLength );
@@ -259,6 +268,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		words.clip = currentSection.clip;
 		words.Play();
 
+		}
 
 
 
