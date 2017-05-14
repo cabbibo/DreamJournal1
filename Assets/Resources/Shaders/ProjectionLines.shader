@@ -38,6 +38,7 @@
 
       uniform float3 CenterPos;
       uniform float raysOn;
+      uniform sampler2D _Audio;
 
 
       #include "Chunks/hash.cginc"
@@ -72,7 +73,7 @@
 				o.eye = _WorldSpaceCameraPos - o.worldPos;
 	
 				o.nor = normalize( dir );//float3(0,0,0);
-				o.uv = float2(0,0);
+				o.uv = float2(float(mVal),0);
         o.debug = float3( 0 , 0 , 0);
 
         return o;
@@ -82,8 +83,9 @@
       //Pixel function returns a solid color for each point.
       float4 frag (varyings v) : COLOR {
       	float3 col = v.nor * .5 + .5;
+        col = tex2D( _Audio , float2( v.uv.x  * .1 , 0)).xyz;
 
-        return float4( col , .1 );
+        return float4( col , length( col) );
 
 
       }

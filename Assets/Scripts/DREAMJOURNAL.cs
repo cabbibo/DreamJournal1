@@ -184,15 +184,15 @@ public class DREAMJOURNAL : MonoBehaviour {
 			alpf.cutoffFrequency += .2f;
 		}
 
-		if( currentSectionID == 8 ){
+		/*if( currentSectionID == 8 ){
 			alpf.cutoffFrequency += 1;
-		}
+		}*/
 
-		if( currentSectionID == 9 ){
+		if( currentSectionID == 8 ){
 			alpf.cutoffFrequency -= .1f;
 		}
 
-		if( currentSectionID == 10 ){
+		if( currentSectionID == 9 ){
 			audio.volume -= .03f;
 			audio.volume = Mathf.Clamp( audio.volume , 0 , 1);
 		}
@@ -281,6 +281,7 @@ public class DREAMJOURNAL : MonoBehaviour {
 		rayMaterial.SetPass(0);
 		rayMaterial.SetBuffer( "_vertBuffer", dreamBuffer._buffer );
 		rayMaterial.SetBuffer( "_artifactBuffer", spacePuppyBuffer._buffer );
+		rayMaterial.SetTexture("_Audio", audioListenerTexture.AudioTexture );
 
 		rayMaterial.SetVector( "CenterPos" , Artifact.transform.position );
 		rayMaterial.SetFloat( "raysOn" , raysOn );

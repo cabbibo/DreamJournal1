@@ -1,4 +1,4 @@
-﻿#pragma kernel CSMain
+#pragma kernel CSMain
  
 #define threadX 8
 #define threadY 8
@@ -86,8 +86,11 @@ float sdCapsule( float3 p, float3 a, float3 b, float r )
 
 float3 getHandForce( Hand h , Vert v ){
 
+  float3 hVec =  v.pos - h.pos;
+  float hDist =  length( hVec );//v.pos - h.pos;
+
   float3 dir = mul( h.localToWorld , float4( 0 ,0,1 ,0)).xyz;
-  float rad = .5 * length( v.pos - h.pos );
+  float rad = .5 * hDist;
   float distance = sdCapsule( v.pos , h.pos , h.pos + dir*100  ,  rad );
 
   float3 force = float3( 0,0,0);
@@ -97,6 +100,10 @@ float3 getHandForce( Hand h , Vert v ){
   }else{
     //v.debug = float3( 0 , 1 , 0);
 
+  }
+
+  if( hDist < .1  && hDist > 0){
+  	force += normalize( hVec );
   }
 
   //v.debug = float3( 1,0,1);
@@ -170,7 +177,9 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
 
   float3 fHandForce = float3( 0,0,0);
+  
   for( int i = 0; i < _NumberHumans; i ++){
+    
     float3 f1 = getHandForce( humanBuffer[i].hand1 , vert );
     float3 f2 = getHandForce( humanBuffer[i].hand2 , vert );
 
@@ -388,10 +397,12 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
   if( vert.section >= 8 && vert.section < 9 ){
 
 
-    force += .4 * artifactDif;
-    dampening = .3;
+    force += .1 * artifactDif;
+    dampening = .9;
 
-   // force += audioForce  * .1;
+    force += audioForce  * .1;
+    force += handForce * .1;
+    force += fHandForce;
 
 
     currentTarget = spacePuppyAnchor;
@@ -402,11 +413,12 @@ void CSMain (uint3 id : SV_DispatchThreadID) {
 
     
     force += .1 * (roomDif + _ArtifactPos - float3( 0 , 20 , 0 ));
-    dampening = .8;
+    dampening = .8 + .1 * (vert.section - 9);
 
     //force += audioForce  * .01;
 
     force += fHandForce;
+    force += handForce;
 
 
 

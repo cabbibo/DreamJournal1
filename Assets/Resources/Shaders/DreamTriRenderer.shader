@@ -20,6 +20,7 @@ Properties {
 
       #include "UnityCG.cginc"
       #include "Chunks/DreamVertStruct.cginc"
+      #include "Chunks/hsv.cginc"
 
 
       uniform sampler2D _RoomTexture;
@@ -69,8 +70,8 @@ Properties {
 		o.pos = mul (UNITY_MATRIX_VP, float4(fPos,1.0f));
 		o.worldPos = fPos;
 		o.eye = _WorldSpaceCameraPos - o.worldPos;
-    o.art = ArtifactPos - o.worldPos;
-    o.og = v.pos - v.targetPos;
+    	o.art = ArtifactPos - o.worldPos;
+    	o.og = v.pos - v.targetPos;
 	
 		o.nor = v.nor;
 		o.uv = v.uv;
@@ -89,9 +90,12 @@ Properties {
 
         float3 refl = reflect( normalize( v.eye) , v.nor );
 
+
+
         float3 cubeCol = texCUBE( _CubeMap , refl ).xyz;
 
 
+        float match = dot( v.nor , normalize( v.eye ));
         float m = 1;//dot( v.nor , normalize( v.art ));
         float3 pulseCol = m * roomCol * (1 / (2*(1.5 + .9*sin(4*_Time.y))*length( v.art)+ .1));
 
@@ -101,8 +105,16 @@ Properties {
 
         float3 rainbowCol = normalize( v.nor ) * .5 + .5;
         rainbowCol *= cubeCol;
-        float3 gooeyCol = lerp( roomCol , rainbowCol , clamp((length(v.og)-.06) * 10,0,1));
+        float3 gooeyCol = lerp( roomCol , rainbowCol , clamp((length(v.og)-.2) * 10,0,1));
         col = lerp( col , gooeyCol , clamp(smoothedSection-1,0,1));
+
+        
+        float3 hue = hsv( (length( v.og )-.2) * .1 , 1 , 1 );
+        float3 aCol2 = tex2D(_Audio , float2( match * match , 0 )).xyz;
+
+        if( smoothedSection >= 8  ){
+        	col = lerp( col , (roomCol + hue ) * col + roomCol + aCol2, clamp(smoothedSection-8,0,1));
+        }
 
         //col = v.debug;
         //col = aCol;//cubeCol;
