@@ -102,8 +102,8 @@ float3 getHandForce( Hand h , Vert v ){
 
   }
 
-  if( hDist < .1  && hDist > 0){
-  	force += normalize( hVec );
+  if( hDist < .5  && hDist > 0){
+  	force += normalize( hVec )  / ( 1.8 + 4 * hDist );
   }
 
   //v.debug = float3( 1,0,1);

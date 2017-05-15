@@ -105,7 +105,7 @@ Properties {
 
         float3 rainbowCol = normalize( v.nor ) * .5 + .5;
         rainbowCol *= cubeCol;
-        float3 gooeyCol = lerp( roomCol , rainbowCol , clamp((length(v.og)-.2) * 10,0,1));
+        float3 gooeyCol = lerp( roomCol , rainbowCol , clamp((length(v.og)-.2) * 2,0,1));
         col = lerp( col , gooeyCol , clamp(smoothedSection-1,0,1));
 
         

@@ -246,29 +246,29 @@ public class DREAMJOURNAL : MonoBehaviour {
 		}
 	
 
-		if( currentSectionID <= 10 ){
+		//if( currentSectionID < 10 ){
 
-		currentSection = sections[currentSectionID];
+			currentSection = sections[currentSectionID];
 
-		Invoke("NextSection", currentSection.sectionLength );
+			Invoke("NextSection", currentSection.sectionLength );
 
 
 
-		// Flip Flop Loop sources for nice fading!
-		tmpLoop = primaryLoop;
-		primaryLoop = secondaryLoop;
+			// Flip Flop Loop sources for nice fading!
+			tmpLoop = primaryLoop;
+			primaryLoop = secondaryLoop;
 
-		primaryLoop.clip = currentSection.loop;
-		primaryLoop.Play();
-		primaryLoop.volume = 0;
+			primaryLoop.clip = currentSection.loop;
+			primaryLoop.Play();
+			primaryLoop.volume = 0;
 
-		secondaryLoop = tmpLoop;
+			secondaryLoop = tmpLoop;
 
-		// Play new words
-		words.clip = currentSection.clip;
-		words.Play();
+			// Play new words
+			words.clip = currentSection.clip;
+			words.Play();
 
-		}
+		//}
 
 
 
